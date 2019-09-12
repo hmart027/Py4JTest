@@ -16,16 +16,18 @@ class ImageProcessor(object):
     def processImage(self, w=None, h=None, c=None, data=None):
         if data is None:
             return 0
-        print("Img Dims: " + str(w)+", "+str(h)+", "+str(c))
+        #print("Img Dims: " + str(w)+", "+str(h)+", "+str(c))
+        #start_time = time.time()
         # Load image
         self.image = np.reshape(np.frombuffer(data, dtype='B', count=(w*h*c)), (h,w,c), 'C')
         #image = skimage.io.imread(os.path.join(IMAGE_DIR, "office2.jpg"))
         # Run detection
-        tf.keras.backend.clear_session()
+        #tf.keras.backend.clear_session()
         results = model.detect([self.image]) 
         # Visualize results
         self.r = results[0]    
-        print("Found: "+str(self.r['rois'].shape[0])+" objects")
+        #elapsed_time = time.time() - start_time
+        #print("Found: "+str(self.r['rois'].shape[0])+" objects in "+str(round(elapsed_time,3))+" s")
         
         return self.r['rois'].shape[0]
     
@@ -48,7 +50,8 @@ class ImageProcessor(object):
         implements = ["com.martindynamics.py4j.test.ImageProcessorListener"]
 
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+import time
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import sys
 #from py4j.java_gateway import JavaGateway, CallbackServerParameters
 from py4j.clientserver import ClientServer, JavaParameters, PythonParameters
@@ -71,7 +74,7 @@ gateway = ClientServer(
 #    python_server_entry_point=processor)
 
 # Root directory of the project
-ROOT_DIR = os.path.abspath("E:/School/Research/CNN-Models/MaskRCNN/")
+ROOT_DIR = os.path.abspath("/mnt/Research/Harold/software/Mask_RCNN/")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -106,9 +109,9 @@ config = InferenceConfig()
 #config.display()
 
 #Take out for GPU use
-config2 = tf.ConfigProto() 
-config2.inter_op_parallelism_threads = 1 
-keras.backend.set_session(tf.Session(config=config2))
+#config2 = tf.ConfigProto() 
+#config2.inter_op_parallelism_threads = 1 
+#keras.backend.set_session(tf.Session(config=config2))
 
 # Create model object in inference mode.
 model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)

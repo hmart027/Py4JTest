@@ -4,8 +4,9 @@ Created on Thu Jul 25 10:15:46 2019
 
 @author: harold
 """
+
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import sys
 import time
 from random import shuffle
@@ -18,7 +19,7 @@ import tensorflow as tf
 import keras
 
 # Root directory of the project
-ROOT_DIR = os.path.abspath("E:/School/Research/CNN-Models/MaskRCNN/")
+ROOT_DIR = os.path.abspath("/mnt/Research/Harold/software/Mask_RCNN/")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -26,7 +27,7 @@ from mrcnn import utils
 import mrcnn.model as modellib
 from mrcnn import visualize
 # Import COCO config
-sys.path.append(ROOT_DIR)  # To find local version
+#sys.path.append(ROOT_DIR)  # To find local version
 import coco
 
 # Directory to save logs and trained model
@@ -53,9 +54,9 @@ config = InferenceConfig()
 #config.display()
 
 #Take out for GPU use
-config2 = tf.ConfigProto() 
-config2.inter_op_parallelism_threads = 1 
-keras.backend.set_session(tf.Session(config=config2))
+#config2 = tf.ConfigProto() 
+#config2.inter_op_parallelism_threads = 1 
+#keras.backend.set_session(tf.Session(config=config2))
 
 # Create model object in inference mode.
 model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
@@ -84,10 +85,10 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
                'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
                'teddy bear', 'hair drier', 'toothbrush']
 
-matplotlib.use('Qt5Agg')
+#matplotlib.use('Qt5Agg')
 
 # Load image
-image = skimage.io.imread(os.path.join(IMAGE_DIR, "office2.jpg"))
+image = skimage.io.imread(os.path.join(IMAGE_DIR, "1045023827_4ec3e8ba5c_z.jpg"))
 
 for i in range(0,100):
     tf.keras.backend.clear_session()
