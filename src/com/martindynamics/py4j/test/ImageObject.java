@@ -18,9 +18,11 @@ public class ImageObject {
 		coordinates[2] = (objBytes[11]&0xFF)<<24 | (objBytes[10]&0xFF)<<16 | (objBytes[9]&0xFF)<<8  | (objBytes[8]&0xFF);
 		coordinates[3] = (objBytes[15]&0xFF)<<24 | (objBytes[14]&0xFF)<<16 | (objBytes[13]&0xFF)<<8 | (objBytes[12]&0xFF);
 		
-		for(int h=0, index=0; h<imgH; h++) {
-			for(int w=0; w<imgW; w++) {
-				mask[h][w] = maskBytes[index++]>0;
+		if(maskBytes!=null){
+			for(int h=0, index=0; h<imgH; h++) {
+				for(int w=0; w<imgW; w++) {
+					mask[h][w] = maskBytes[index++]>0;
+				}
 			}
 		}
 	}

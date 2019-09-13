@@ -17,7 +17,7 @@ class ImageProcessor(object):
         if data is None:
             return 0
         #print("Img Dims: " + str(w)+", "+str(h)+", "+str(c))
-        #start_time = time.time()
+        start_time = time.time()
         # Load image
         self.image = np.reshape(np.frombuffer(data, dtype='B', count=(w*h*c)), (h,w,c), 'C')
         #image = skimage.io.imread(os.path.join(IMAGE_DIR, "office2.jpg"))
@@ -26,8 +26,8 @@ class ImageProcessor(object):
         results = model.detect([self.image]) 
         # Visualize results
         self.r = results[0]    
-        #elapsed_time = time.time() - start_time
-        #print("Found: "+str(self.r['rois'].shape[0])+" objects in "+str(round(elapsed_time,3))+" s")
+        elapsed_time = time.time() - start_time
+        print("Found: "+str(self.r['rois'].shape[0])+" objects in "+str(round(elapsed_time,3))+" s")
         
         return self.r['rois'].shape[0]
     

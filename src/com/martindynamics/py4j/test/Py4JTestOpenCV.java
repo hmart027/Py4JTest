@@ -17,6 +17,8 @@ public class Py4JTestOpenCV extends Thread{
 	private ImageProcessor proc;
 	
 	volatile BufferedImage img;
+	volatile byte[] imgData;
+	int h, w;
 
 	VideoCapture camera;
 	boolean cameraLoaded;
@@ -47,11 +49,11 @@ public class Py4JTestOpenCV extends Thread{
         
 		boolean running = true;
 		while(running) {
-			if(img==null)
-				continue;
+			while(img==null || !grabbed){}
 			
 			t0 = System.currentTimeMillis();
-			ArrayList<ImageObject> objects = new ArrayList<>(proc.processImage(ImageManipulation.getRGBAArray(img)));
+//			ArrayList<ImageObject> objects = new ArrayList<>(proc.processImage(ImageManipulation.getRGBAArray(img), false));
+			ArrayList<ImageObject> objects = proc.processImage(imgData, w, h, true);
 			System.out.println("\nTook: " + (System.currentTimeMillis() - t0) / 1000f + " seconds to find "
 					+ objects.size() + " objects");
 			for (ImageObject obj : objects) {
@@ -97,9 +99,13 @@ public class Py4JTestOpenCV extends Thread{
 					camera.read(tl);
 				}
 				if(grabFrames && !grabbed){
-					if(img == null)
+					if(img == null){
 						img = new BufferedImage(tl.width(), tl.height(), BufferedImage.TYPE_3BYTE_BGR);
-					tl.get(0, 0, ((DataBufferByte) img.getRaster().getDataBuffer()).getData());
+						imgData = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+						h = tl.height();
+						w = tl.width();
+					}
+					tl.get(0, 0, imgData);
 					grabbed = true;
 				}
 			}
@@ -108,6 +114,14 @@ public class Py4JTestOpenCV extends Thread{
 	
 	public static void main(String[] args) {
 		new Py4JTestOpenCV();
+		
+//		byte[][][] mat = new byte[480][640][3];
+//		
+//		for(int i=0; i<100; i++){
+//			long t0=System.currentTimeMillis();
+//			ImageProcessor.flatten(mat);
+//			System.out.println(System.currentTimeMillis()-t0);
+//		}
 	}
 	
 }

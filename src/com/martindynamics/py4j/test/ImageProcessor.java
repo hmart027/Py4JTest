@@ -41,6 +41,44 @@ public class ImageProcessor {
 		
 		return null;
 	}
+	
+	public ArrayList<ImageObject> processImage(byte[] img, int w, int h, boolean simpleObject) {
+		ArrayList<ImageObject> objects = new ArrayList<>();
+		ImageObject object;
+		long t0, t1;
+		try {
+			t0=System.currentTimeMillis();
+			int objectCount = processor.processImage(w, h, 3, img);
+			t1=System.currentTimeMillis();
+			System.out.println("Took "+(t1-t0) +"ms to processImage");
+//			t0=System.currentTimeMillis();
+//			processor.getData();
+//			t1=System.currentTimeMillis();
+//			System.out.println("Took "+(t1-t0) +"ms to getData");
+			for (int o = 0; o < objectCount; o++) {
+				if(!simpleObject){
+					t0=System.currentTimeMillis();
+					object = new ImageObject(w, h, processor.getScore(o), processor.getLabel(o), 
+							processor.getMaskBytes(o), processor.getObjectBytes(o));
+					t1=System.currentTimeMillis();
+					//System.out.println("Took "+(t1-t0) +"ms to create obj");
+				}else{
+					t0=System.currentTimeMillis();
+					object = new ImageObject(w, h, processor.getScore(o), processor.getLabel(o), 
+							null, processor.getObjectBytes(o));
+					t1=System.currentTimeMillis();
+					System.out.println("Took "+(t1-t0) +"ms to create obj");
+				}
+				objects.add(object);
+			}
+
+			return objects;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
 		
 	//image needs to be flattened into a 1d array such that the color is the fastest changing index, followed by x, and finally y.
 	//That is, a nested array would be indexed as [y][x][c]
