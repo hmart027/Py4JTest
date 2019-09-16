@@ -12,15 +12,33 @@ class ImageProcessor(object):
             self.i = 0
         self.i = self.i+1
         return self.i
+        
+    def processImage(self):
+        start_time = time.time()
+        # Load image
+        self.imgFile.seek(0)
+        img = Image.GetRootAsImage(bytearray(self.imgFile.read()), 0)
+        self.image = np.reshape(img.DataAsNumpy(), (img.Height(),img.Width(),3), 'C')
+        elapsed_time = time.time() - start_time
+        print("Loaded in "+str(round(elapsed_time,3))+" s")
+        # Run detection
+        start_time = time.time()
+        #tf.keras.backend.clear_session()
+        results = model.detect([self.image]) 
+        # Visualize results
+        self.r = results[0]    
+        elapsed_time = time.time() - start_time
+        print("Found: "+str(self.r['rois'].shape[0])+" objects in "+str(round(elapsed_time,3))+" s")
+        
+        return self.r['rois'].shape[0]
     
-    def processImage(self, w=None, h=None, c=None, data=None):
+    def processImage2(self, w=None, h=None, c=None, data=None):
         if data is None:
             return 0
         #print("Img Dims: " + str(w)+", "+str(h)+", "+str(c))
         start_time = time.time()
         # Load image
         self.image = np.reshape(np.frombuffer(data, dtype='B', count=(w*h*c)), (h,w,c), 'C')
-        #image = skimage.io.imread(os.path.join(IMAGE_DIR, "office2.jpg"))
         # Run detection
         #tf.keras.backend.clear_session()
         results = model.detect([self.image]) 
@@ -63,6 +81,8 @@ import matplotlib.pyplot as plt
 from keras.backend import clear_session
 import tensorflow as tf
 import keras
+import flatbuffers
+from Image import Image
 
 processor = ImageProcessor()
 gateway = ClientServer(
@@ -72,6 +92,8 @@ gateway = ClientServer(
 #gateway = JavaGateway(
 #    callback_server_parameters=CallbackServerParameters(),
 #    python_server_entry_point=processor)
+    
+processor.imgFile = open('/tmp/vision.mon', 'rb')
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("/mnt/Research/Harold/software/Mask_RCNN/")

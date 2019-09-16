@@ -1,24 +1,46 @@
 package com.martindynamics.py4j.test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
 import py4j.ClientServer;
 
+import NOMAD.vision.*;
+import com.google.flatbuffers.FlatBufferBuilder;
+
 public class ImageProcessor {
 	
 	ClientServer server;
 	ImageProcessorListener processor;
+    RandomAccessFile f;
+	FlatBufferBuilder fbBuilder = new FlatBufferBuilder(1024000);
 	
 	public ImageProcessor(){
-		 server = new ClientServer(null);
-	     // We get an entry point from the Python side
-	     processor = (ImageProcessorListener) server.getPythonServerEntryPoint(new Class[] { ImageProcessorListener.class });
+		server = new ClientServer(null);
+	    // We get an entry point from the Python side
+	    processor = (ImageProcessorListener) server.getPythonServerEntryPoint(new Class[] { ImageProcessorListener.class });
+	     
+	    File file = new File("/tmp/vision.mon");
+		try {
+			f = new RandomAccessFile(file, "rw");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void close() {
 		if(server!=null)
 			server.shutdown();
+		if(f!=null)
+			try {
+				f.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 	}
 	
 	public List<ImageObject> processImage(byte[][][] img) {
@@ -27,7 +49,7 @@ public class ImageProcessor {
 		ArrayList<ImageObject> objects = new ArrayList<>();
 		ImageObject object;
 		try {
-			int objectCount = processor.processImage(w, h, 3, flatten(img));
+			int objectCount = processor.processImage2(w, h, 3, flatten(img));
 			for (int o = 0; o < objectCount; o++) {
 				object = new ImageObject(w, h, processor.getScore(o), processor.getLabel(o), 
 						processor.getMaskBytes(o), processor.getObjectBytes(o));
@@ -48,7 +70,18 @@ public class ImageProcessor {
 		long t0, t1;
 		try {
 			t0=System.currentTimeMillis();
-			int objectCount = processor.processImage(w, h, 3, img);
+
+			int imgOffset = Image.createImage(fbBuilder, fbBuilder.createByteVector(img), w, h);
+			fbBuilder.finish(imgOffset);
+			try {
+				f.seek(0);
+				f.write(fbBuilder.sizedByteArray());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			fbBuilder.clear();
+			
+			int objectCount = processor.processImage();
 			t1=System.currentTimeMillis();
 			System.out.println("Took "+(t1-t0) +"ms to processImage");
 //			t0=System.currentTimeMillis();

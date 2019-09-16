@@ -1,0 +1,9 @@
+namespace NOMAD.vision;
+
+table Image{
+  data:[ubyte];
+  width:uint;
+  height:uint;
+}
+
+root_type Image;

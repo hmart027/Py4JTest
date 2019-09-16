@@ -53,6 +53,7 @@ public class Py4JTestOpenCV extends Thread{
 			
 			t0 = System.currentTimeMillis();
 //			ArrayList<ImageObject> objects = new ArrayList<>(proc.processImage(ImageManipulation.getRGBAArray(img), false));
+			
 			ArrayList<ImageObject> objects = proc.processImage(imgData, w, h, true);
 			System.out.println("\nTook: " + (System.currentTimeMillis() - t0) / 1000f + " seconds to find "
 					+ objects.size() + " objects");
@@ -68,12 +69,22 @@ public class Py4JTestOpenCV extends Thread{
 							obj.coordinates[2]-obj.coordinates[0]);
 					g2d.dispose();
 				}
-				if(obj.label.equals("chair")){
+//				if(obj.label.equals("chair")){
+//					Graphics2D g2d = img.createGraphics();
+//					g2d.setColor(java.awt.Color.GREEN);
+//					g2d.drawRect(obj.coordinates[1], obj.coordinates[0], 
+//							obj.coordinates[3]-obj.coordinates[1],
+//							obj.coordinates[2]-obj.coordinates[0]);
+//					g2d.dispose();
+//				}
+				else{
 					Graphics2D g2d = img.createGraphics();
 					g2d.setColor(java.awt.Color.GREEN);
 					g2d.drawRect(obj.coordinates[1], obj.coordinates[0], 
 							obj.coordinates[3]-obj.coordinates[1],
 							obj.coordinates[2]-obj.coordinates[0]);
+					g2d.setColor(java.awt.Color.RED);
+					g2d.drawString(obj.label+": "+Math.round(obj.score*1000)/1000f, obj.coordinates[1]+5, obj.coordinates[0]+10);
 					g2d.dispose();
 				}
 			}
@@ -114,14 +125,6 @@ public class Py4JTestOpenCV extends Thread{
 	
 	public static void main(String[] args) {
 		new Py4JTestOpenCV();
-		
-//		byte[][][] mat = new byte[480][640][3];
-//		
-//		for(int i=0; i<100; i++){
-//			long t0=System.currentTimeMillis();
-//			ImageProcessor.flatten(mat);
-//			System.out.println(System.currentTimeMillis()-t0);
-//		}
 	}
 	
 }

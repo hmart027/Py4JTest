@@ -4,7 +4,9 @@ public interface ImageProcessorListener {
 	
 	public int processImageTest();
 	
-	public int processImage(int w, int h, int c, byte[] data);
+	public int processImage();
+	
+	public int processImage2(int w, int h, int c, byte[] data);
 	
 	public String getLabel(int id);
 
