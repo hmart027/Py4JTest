@@ -82,6 +82,7 @@ public class ImageProcessor {
 			fbBuilder.clear();
 			
 			int objectCount = processor.processImage();
+//			int objectCount = processor.processImage2(w, h, 3, img);
 			t1=System.currentTimeMillis();
 			System.out.println("Took "+(t1-t0) +"ms to processImage");
 //			t0=System.currentTimeMillis();

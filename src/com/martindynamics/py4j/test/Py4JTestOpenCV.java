@@ -34,7 +34,7 @@ public class Py4JTestOpenCV extends Thread{
 		long t0;
         //byte[][][] img = ImageManipulation.loadImage("E:/School/Research/CNN-Models/MaskRCNN/images/office2.jpg");
         proc = new ImageProcessor();
-        camera = new VideoCapture(1);
+        camera = new VideoCapture(0);
         
         if (!camera.isOpened()) {
 			System.out.println("Camera Error");
