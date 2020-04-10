@@ -27,8 +27,8 @@ public class Py4JTest extends Thread{
 	volatile BufferedImage img;
 	volatile boolean imgReady = false;
 	
-	IViewer view = null;
-	
+	//IViewer view = null;
+		
 	public Py4JTest(){
 		long t0;
         //byte[][][] img = ImageManipulation.loadImage("E:/School/Research/CNN-Models/MaskRCNN/images/office2.jpg");
@@ -38,13 +38,15 @@ public class Py4JTest extends Thread{
 		boolean running = true;
 		while(running) {
 			if(imgReady) {
-				if(view==null) {
-					view = new IViewer(img);
-				}else {
-					view.setImage(img);
-				}
+//				if(view==null) {
+//					view = new IViewer(img);
+//				}else {
+//					view.setImage(img);
+//				}
 		        t0 = System.currentTimeMillis();
-		        ArrayList<ImageObject> objects = new ArrayList<>(proc.processImage(ImageManipulation.getRGBAArray(img)));
+//		        ArrayList<ImageObject> objects = new ArrayList<>(proc.processImage(ImageManipulation.getRGBAArray(img)));
+		        ArrayList<ImageObject> objects = new ArrayList<>(proc.processImage(
+		        		ImageProcessor.flatten(ImageManipulation.getRGBAArray(img)),img.getWidth(),img.getHeight(),true));
 		        System.out.println("Took: "+(System.currentTimeMillis()-t0)/1000f+" seconds to find "+objects.size()+" objects");
 		        t0 = System.currentTimeMillis();
 		        for(ImageObject obj: objects) {

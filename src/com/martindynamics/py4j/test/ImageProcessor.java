@@ -19,12 +19,22 @@ public class ImageProcessor {
     RandomAccessFile f;
 	FlatBufferBuilder fbBuilder = new FlatBufferBuilder(1024000);
 	
+	private static String tmpFilePrefix = "/tmp/";
+	
+	static {
+		String os = System.getProperty("os.name").toLowerCase();
+		
+		if(os.contains("win")) {
+			tmpFilePrefix="C:/temp/";
+		}
+	}
+	
 	public ImageProcessor(){
 		server = new ClientServer(null);
 	    // We get an entry point from the Python side
 	    processor = (ImageProcessorListener) server.getPythonServerEntryPoint(new Class[] { ImageProcessorListener.class });
 	     
-	    File file = new File("/tmp/vision.mon");
+	    File file = new File(tmpFilePrefix+"vision.mon");
 		try {
 			f = new RandomAccessFile(file, "rw");
 		} catch (FileNotFoundException e) {

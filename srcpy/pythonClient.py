@@ -2,6 +2,8 @@
 """
 Created on Tue Jul 23 18:32:19 2019
 
+Uses TensorFlow 1.14 and Keras 2.2.5
+
 @author: harold
 """
 
@@ -16,7 +18,10 @@ class ImageProcessor(object):
     def processImage(self):
         start_time = time.time()
         # Load image
-        self.imgFile = open('/tmp/vision.mon', 'rb')
+        if(sys.platform == 'win32'):
+           self.imgFile = open('C:/temp/vision.mon', 'rb')
+        else:  
+           self.imgFile = open('/tmp/vision.mon', 'rb')
         self.imgFile.seek(0)
         img = Image.GetRootAsImage(bytearray(self.imgFile.read()), 0)
         self.image = np.reshape(img.DataAsNumpy(), (img.Height(),img.Width(),3), 'C')
@@ -95,7 +100,10 @@ gateway = ClientServer(
 #    python_server_entry_point=processor)
 
 # Root directory of the project
-ROOT_DIR = os.path.abspath("/mnt/Research/Harold/software/Mask_RCNN/")
+if(sys.platform == 'win32'):
+   ROOT_DIR = os.path.abspath("E:/School/Research/CNN-Models/MaskRCNN/")
+else:
+   ROOT_DIR = os.path.abspath("/mnt/Research/Harold/software/Mask_RCNN/")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
