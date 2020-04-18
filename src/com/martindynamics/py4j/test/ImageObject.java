@@ -1,11 +1,15 @@
 package com.martindynamics.py4j.test;
 
-public class ImageObject {
+import java.io.Serializable;
 
-	int[]       coordinates; // y0,x0,y1,x1
-	float       score;
-	boolean[][] mask;  //y,x
-	String      label;
+public class ImageObject implements Serializable{
+
+	private static final long serialVersionUID = 7462399897004342831L;
+
+	public int[]       coordinates; // y0,x0,y1,x1
+	public float       score;
+	public boolean[][] mask;  //y,x
+	public String      label;
 	
 	public ImageObject(int imgW, int imgH, float score, String label, byte[] maskBytes, byte[] objBytes) {
 		coordinates = new int[4];

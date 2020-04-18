@@ -8,6 +8,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import com.martindynamics.video.VideoTools;
+import com.martindynamics.video.stream.VideoPacket;
+import com.martindynamics.video.stream.VideoStream;
+import com.martindynamics.video.stream.codec.VideoFrame;
+
 import image.tools.IViewer;
 import img.ImageManipulation;
 
@@ -22,21 +27,42 @@ public class Py4JTest extends Thread{
 	private ObjectInputStream  input;
 	private ObjectOutputStream output;
 	
+	private VideoStream videoStream;
+	
 	int portNumber = 1586;
 	
+	int frameCounter;
 	volatile BufferedImage img;
 	volatile boolean imgReady = false;
 	
 	//IViewer view = null;
+	
+	static {
+		try {
+			System.loadLibrary("VideoStreaming");
+		}catch(UnsatisfiedLinkError | SecurityException e) {
+			System.out.println("Unable to load VideoStreaming.");
+			e.printStackTrace();
+		}
+	}
 		
 	public Py4JTest(){
 		long t0;
-        //byte[][][] img = ImageManipulation.loadImage("E:/School/Research/CNN-Models/MaskRCNN/images/office2.jpg");
+		videoStream = VideoStream.createVideoStream();
         proc = new ImageProcessor();
 		this.start();
         
 		boolean running = true;
 		while(running) {
+			synchronized (this) {
+				while(!this.imgReady) {
+					try {
+						this.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}	
+				}
+			}
 			if(imgReady) {
 //				if(view==null) {
 //					view = new IViewer(img);
@@ -47,13 +73,16 @@ public class Py4JTest extends Thread{
 //		        ArrayList<ImageObject> objects = new ArrayList<>(proc.processImage(ImageManipulation.getRGBAArray(img)));
 		        ArrayList<ImageObject> objects = new ArrayList<>(proc.processImage(
 		        		ImageProcessor.flatten(ImageManipulation.getRGBAArray(img)),img.getWidth(),img.getHeight(),true));
+		        ObjectDetectionResults res = new ObjectDetectionResults(frameCounter++, objects);
 		        System.out.println("Took: "+(System.currentTimeMillis()-t0)/1000f+" seconds to find "+objects.size()+" objects");
 		        t0 = System.currentTimeMillis();
+	        	sendMessage(res);
 		        for(ImageObject obj: objects) {
 		        	System.out.println(obj.label+": "+obj.score);
 		        	System.out.println("\t"+obj.coordinates[0]+", "+obj.coordinates[1]+", "+obj.coordinates[2]+", "+obj.coordinates[3]);
 		        }
 		        System.out.println("Took: "+(System.currentTimeMillis()-t0)/1000f+" seconds to retrieve objects");
+		        imgReady = false;
 			}else {
 				try {
 					Thread.sleep(10);
@@ -67,6 +96,7 @@ public class Py4JTest extends Thread{
 	}
 	
 	public void reconnet() {
+		frameCounter = 0;
 		try {
 			if(server==null || server.isClosed()) {
 				System.out.println("Creating server socket at: "+portNumber);
@@ -106,16 +136,37 @@ public class Py4JTest extends Thread{
 					if(!imgReady) {
 						img = (BufferedImage) obj;
 						imgReady = true;
+						synchronized (this) {
+							this.notifyAll();
+						}
 					}
 			        
-				}else if(obj.getClass() == (byte[].class)){
-					img = new BufferedImage(640,480, BufferedImage.TYPE_3BYTE_BGR);
-					byte[] data = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
-					byte[] in   = (byte[])obj; 
-					for(int i=0; i<in.length; i++) {
-						data[i]=in[i];
+				}else if(obj.getClass().equals(byte[].class)){
+					if(!imgReady) {
+						img = new BufferedImage(640,480, BufferedImage.TYPE_3BYTE_BGR);
+						byte[] data = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+						byte[] in   = (byte[])obj; 
+						for(int i=0; i<in.length; i++) {
+							data[i]=in[i];
+						}
+						imgReady = true;
+						synchronized (this) {
+							this.notifyAll();
+						
+						}
 					}
-					imgReady = true;
+				}else if(obj.getClass().equals(VideoPacket.class)){
+					VideoPacket pkt  = (VideoPacket) obj;
+					VideoFrame frame = videoStream.decodepacket(pkt);
+					if(frame!=null && !imgReady) {
+						img = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+						byte[] imgData = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+						VideoTools.yuv4202bgr(frame.getData(), imgData, frame.getHeight(), frame.getWidth());
+						imgReady = true;
+						synchronized (this) {
+							this.notifyAll();
+						}
+					}
 				}else {
 					System.out.println("Uknown object: "+obj.getClass());
 				}
@@ -137,4 +188,5 @@ public class Py4JTest extends Thread{
 	public static void main(String[] args) {
 		new Py4JTest();
 	}
+	
 }
